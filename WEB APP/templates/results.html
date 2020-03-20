@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>	
+
+    <link type="text/css" rel = "stylesheet" href="{{ url_for('static', filename='main.css') }}">
+
+
+	<title>result</title>
+
+	<meta charset="utf-8"/>
+
+    <link rel="shortcut icon" type="image/jpg" href="{{ url_for('static', filename='favicon.ico') }}"/>
+
+
+
+</head>
+
+
+<body>
+
+
+	<h1>RESULTS</h1>
+	<hr>
+
+<p>	
+	{{label}} = {{prob*100}}% 
+</p>
+
+</body>
+	
+</html>
+
+
+
+

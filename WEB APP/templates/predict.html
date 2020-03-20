@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>	
+
+	<title>Predict image</title>
+	<meta charset="utf-8"/>
+    <link rel="shortcut icon" type="image/jpg" href="{{ url_for('static', filename='favicon.ico') }}"/>
+    <link type="text/css" rel = "stylesheet" href="{{ url_for('static', filename='main.css') }}">
+
+</head>
+
+
+<body>
+	<h1>Upload an image for prediction</h1>
+	<hr>
+
+<!-- 	<form action="{{ url_for('predict')}}" method="post" enctype='multipart/form-data'>
+		<input id="image-selector" name='image-selector' type="file">
+		<input id="predict-button" type = "submit" value="Predict">
+	</form> -->
+
+	<input id="image-selector" name='image-selector' type="file">
+	<input id="predict-button" type = "submit" value="Predict">
+
+	<label for="specieslist_predict">Select Species</label>
+	<select class="drop_down_list"  id='specieslist_predict' name='specieslist_predict'></select>
+
+
+	<br>
+	<br>
+	
+	<!-- displays the selected image-->
+	<img id="selected-image" scr=""/> 
+	<br>
+	<br>
+	<br>
+	<span id="prediction">Prediction: {{ label }} : {{ prob }}</span>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script type="text/javascript" src = "{{ url_for('static',filename='main.js') }}"></script>
+
+</body>
+</html>

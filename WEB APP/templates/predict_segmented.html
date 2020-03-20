@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>	
+
+	<meta charset="utf-8"/>
+	<!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    
+    <!-- ajax -->      
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+    <link type="text/css" rel = "stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="shortcut icon" type="image/jpg" href="{{ url_for('static', filename='favicon.ico') }}"/>
+
+	<title>Predict image</title>
+
+</head>
+
+
+<body>
+
+	<div class="row">
+
+		<div class="col-7">
+			<img id = "segmented_image_display" src="" width="100%"> 
+			<span id="prediction">Prediction: {{ label }} : {{ prob }}</span>
+
+		</div>
+
+	</div>
+
+	<script type="text/javascript" src = "{{ url_for('static',filename='main.js') }}"></script>
+
+	<!-- to reload page once -->
+	<script type="text/javascript"> 
+		$( document ).ready(function() {
+		    window.onload = function() {
+    			document.getElementById('segmented_image_display').src = "{{ url_for('static', filename='temp_img.bmp') }}";		    	
+			}
+		});
+
+		if(!window.location.hash) {
+			        window.location = window.location + '#l';
+			        window.location.reload();
+			    }
+
+
+
+	</script>
+</body>
+</html>
+

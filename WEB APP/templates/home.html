@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Bootstrap CSS -->
+         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- ajax -->      
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+        <!-- css -->      
+        <link type="text/css" rel = "stylesheet" href="{{ url_for('static', filename='main.css') }}">
+
+        <!-- favaicon icon -->      
+        <link rel="shortcut icon" type="image/jpg" href="{{ url_for('static', filename='favicon.ico') }}"/>
+
+        <title>Home</title>
+
+    </head>
+
+    <body> 
+        <h1>Welcome</h1>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+
+        <div class="row">
+            <div class='col-4'></div>
+            <button class = "col button" id="predict_button_home" onclick= "window.location.href = '{{ url_for('predict')}}'">Predict</button> 
+            <div class='col-2'></div>
+
+            <button class = "col button" id="segment_button_home" onclick= "window.location.href = '{{ url_for('segment')}}'">Segment</button>
+            <div class='col-4'></div>
+
+        </div>
+
+
+    <script type="text/javascript" src = "{{ url_for('static',filename='main.js') }}"></script>
+    <style>
+
+    .button{
+        color:white;
+        background-color: #000000;
+        font-size: 20px;
+        border: 2px solid #000000;
+        transition-duration: 0.4s;
+        /*padding: 15px 32px;*/
+        text-align: center;
+        height: 50px;
+        width: 100px;
+
+    }
+
+    h1{
+        color:white;
+        text-align: center;
+        transition-duration: 0.7s;
+        font-size: 140px;
+
+
+    }
+
+    .button:hover {
+      background-color: #FFFFFF; 
+      color: black;
+    }
+
+    body {
+      background-image: url('static/Home_background.jpg');
+    }
+
+    </style> 
+
+
+    </body>
+</html>
