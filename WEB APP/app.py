@@ -17,11 +17,11 @@ from flask import Flask,render_template,request,redirect,url_for,session,flash,j
 
 # from base64 import decodestring
 
-global model
 global ROI
+global model
 global predictions
-predictions = {'label':'','prob':''}
 
+predictions = {'label':'','prob':''}
 
 default = {'R_l': 0, 'G_l': 0, 'B_l': 0, 'R_h': 255, 'G_h': 255, 'B_h': 255}
         
@@ -41,28 +41,23 @@ def grab_json(url):
 
 
 def gen_frames():  
-
     data_send = default
     resp = requests.post(url+'/jsondata', data = data_send)
     cap = cv2.VideoCapture(0)
     
-
     while True:
-
         dic = grab_json(url+'/jsondata') # this will make a get request to the url
 
         if dic == None:
             raise Exception("dic is none!") 
 
-
         R_l = int(dic['R_l'])
         G_l = int(dic['G_l'])
-        B_l = int(dic['B_l'] )
+        B_l = int(dic['B_l'])
 
         R_h = int(dic['R_h'])
         G_h = int(dic['G_h'])
         B_h = int(dic['B_h'])
-
 
         _,frame = cap.read()
         blurred_frame = cv2.blur(frame,(5,5),0)    
@@ -103,6 +98,71 @@ def gen_frames():
             _, buffer_frame = cv2.imencode('.jpg', frame)
             f_frame = buffer_frame.tobytes()
 
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpg\r\n\r\n' + f_roi + b'\r\n')
+
+        except IndexError:
+            print('indexerror!!')
+            pass
+
+
+def single_image():  
+    #positing slider values for the first time
+    data_send = default
+    resp = requests.post(url+'/jsondata', data = data_send)
+
+    frame =  cv2.imread('static/temp_img.bmp') 
+    
+    while True:
+        dic = grab_json(url+'/jsondata') # this will make a get request to the url
+
+        if dic == None:
+            raise Exception("dic is none!") 
+
+        R_l = int(dic['R_l'])
+        G_l = int(dic['G_l'])
+        B_l = int(dic['B_l'])
+
+        R_h = int(dic['R_h'])
+        G_h = int(dic['G_h'])
+        B_h = int(dic['B_h'])
+
+        blurred_frame = cv2.blur(frame,(5,5),0)    
+        hsv_frame = cv2.cvtColor(blurred_frame,cv2.COLOR_BGR2HSV)
+
+        #Defining color theshold
+        low_green = np.array([R_l, G_l, B_l])
+        high_green = np.array([R_h, G_h, B_h])
+        print(low_green,high_green)
+        green_mask = cv2.inRange(hsv_frame, low_green, high_green)
+
+        #Morphological adjestments
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+        opening = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel, iterations=1)
+        close = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel, iterations=1)
+
+        #Getting the largest contour
+        contours,_ = cv2.findContours(green_mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)    
+
+        try:
+            biggest = sorted(contours,key=cv2.contourArea,reverse=True)[0]
+            cv2.drawContours(frame,biggest,-1,(0,0,0),1)
+
+            #Creating blank mask and filling in the contour
+            blank_mask = np.zeros(frame.shape, dtype=np.uint8)
+            cv2.fillPoly(blank_mask, [biggest], (255,255,255))
+            blank_mask = cv2.cvtColor(blank_mask, cv2.COLOR_BGR2GRAY)
+            global ROI
+            ROI = cv2.bitwise_and(frame,frame,mask=blank_mask)
+
+            os.remove('static/temp_img.bmp')
+            cv2.imwrite('static/temp_img.bmp',ROI)
+
+            _, buffer_roi = cv2.imencode('.jpg', ROI)
+            f_roi = buffer_roi.tobytes()
+
+            _, buffer_frame = cv2.imencode('.jpg', frame)
+            f_frame = buffer_frame.tobytes()
 
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpg\r\n\r\n' + f_roi + b'\r\n')
@@ -127,7 +187,6 @@ def prepare_image(image,target_size,flag=False):
     image = np.expand_dims(image,axis=0)
     return image
 
-
 def save_roi_at_location(folders):
     path = 'dataset/'+folders['speciesSelectedValue']+"   "+folders['diseaseSelectedValue']
     print(os.listdir())
@@ -135,8 +194,6 @@ def save_roi_at_location(folders):
     image_path = path+'/'+i+'.jpg'
     cv2.imwrite(image_path,ROI)
     print('image saved')
-
-
 
 def give_predictions(image,SelectedValue):
     species = ['Apple','Cherry','Corn (maize)', 'Grape','Peach','Pepper bell','Potato','Strawberry','Tomato'];
@@ -189,6 +246,7 @@ def give_predictions(image,SelectedValue):
     # print(np.shape(image[0]))
     image = prepare_image(image[0],(128,128,3),flag = True)
     preds = model.predict(image)
+    print('preds',preds)
     max_ = np.argmax(preds)
     label = target_names[max_]
     global predictions
@@ -210,16 +268,17 @@ app.secret_key='hi'
 def home():
     return render_template('home.html')
 
-
 @app.route('/video_feed')
 def video_feed():
     return Response(gen_frames(),mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/single_image')
+def single_image():
+    return Response(gen_frames(),mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/segment')
 def segment():
     return render_template("index.html")
-
 
 @app.route('/save',methods = ['GET','POST'])
 def save():
@@ -240,7 +299,6 @@ def result():
     else:
         return jsonify(predictions) # return 
 
-
 @app.route('/jsondata',methods=['GET','POST'])
 def jsondata():
     if request.method == 'POST':        
@@ -256,40 +314,33 @@ def jsondata():
     else:
         return jsonify(data) # return dic when get request 
 
-
 @app.route("/predict", methods=["GET","POST"])
 def predict():
     data = {}
     data["success"] = False  
-
+    global predictions    
     if request.method == 'GET':
-        try:
-            return render_template('predict.html',label=predictions['label'],prob=predictions['prob'])
-        except:
-            return render_template('predict.html')
+        return render_template('predict.html')
 
-    if request.method == 'POST':
-        # image = request.files.get("image-selector",'').read()
-        # image = request.files.get("image-selector",'')
+    elif request.method == 'POST':
         data = request.get_json()
         meta_data,image = data['image'].split(',')
         SelectedValue = data['SelectedValue']
 
         image = base64.b64decode(image)
         image = Image.open(io.BytesIO(image))
-        image.save("image_for_prediction.jpg")
+        image.save("static/temp_img.bmp")
         image = prepare_image(image,target_size = (224,224))
 
         if wanna_load_model =='y':
             predictions =  give_predictions(image,SelectedValue)
-        #sending post request  
-        # resp = requests.post(url = url+'/result', data = predictions) 
-        # print('response of post',resp)
 
         print(predictions['label'],predictions['prob'])
-        return render_template('index.html',label=predictions['label'],prob=predictions['prob'][0])
-    return render_template('predict.html')
+        return redirect(url_for('display_results'))
 
+@app.route('/display_results',methods=['GET','POST'])
+def display_results():
+    return render_template('display_results.html',label=predictions['label'],prob=predictions['prob'][0])
 
 @app.route('/get_pred_seg',methods=['GET','POST'])
 def get_pred_seg():
@@ -329,6 +380,10 @@ def pred_api():
     else:
         return jsonify(predictions) 
 
+
+@app.route('/segment_static')
+def segment_static():
+    return 'hi'
 
 
 if __name__ == '__main__':
