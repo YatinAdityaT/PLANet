@@ -263,6 +263,7 @@ def predict():
     elif request.method == 'POST':
         data = request.get_json()
         meta_data,image = data['image'].split(',')
+        global SelectedValue
         SelectedValue = data['SelectedValue']
 
         image = base64.b64decode(image)
@@ -284,6 +285,12 @@ def display_results():
 def get_pred_seg():
     img= prepare_image(ROI,target_size = (224,224))
     predictions=give_predictions(img,flag=True)
+    return render_template('predict_segmented.html',label=predictions['label'],prob=predictions['prob'])
+
+@app.route('/get_pred_seg_2',methods=['GET','POST'])
+def get_pred_seg_2():
+    img= prepare_image(ROI,target_size = (224,224),flag=True)
+    predictions=give_predictions(img,SelectedValue)
     return render_template('predict_segmented.html',label=predictions['label'],prob=predictions['prob'])
 
 @app.route('/folders',methods = ['GET','POST'])
@@ -325,7 +332,9 @@ def segment_static():
 def save_segmented_image():
     data = request.get_json()
     meta_data,image = data['image'].split(',')
+    global SelectedValue
     SelectedValue = data['SelectedValue']
+    print(SelectedValue)
 
     image = base64.b64decode(image)
     image = Image.open(io.BytesIO(image))

@@ -85,16 +85,12 @@
 
             <div class="row">
                 <div class="col">
-                    <input type="button" value="Save_segmented" id="save_button" onclick= "window.location.href = '{{ url_for('save')}}'">
-                    <input type="button" value="Predict_segmented" id="predict_button" onclick= "window.location.href = '{{ url_for('get_pred_seg')}}'">
+                    <input type="button" value="Predict_segmented" id="predict_button" onclick= "window.location.href = '{{ url_for('get_pred_seg_2')}}'">
                 </div>
             </div>
 
             <div class="row"></div>
             <div class="row"></div>
-            <div class="row">
-                <span id="prediction_segmentation">Prediction: {{ label }} {{ prob }} </span>
-            </div>
             
         </div>     
 
