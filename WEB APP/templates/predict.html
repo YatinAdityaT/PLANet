@@ -11,33 +11,37 @@
 
 
 <body>
-	<h1>Upload an image for prediction</h1>
-	<hr>
+	<!-- loading screen -->
+	<div id = 'loader_wrapper' class="loader_wrapper">
+		<h2 data-text="Loading…">Loading…</h2>
+		<img src="{{ url_for('static', filename='maple_leaf.png') }}" class="rotate"  width="280" height="280"/>
+	</div>
 
-<!-- 	<form action="{{ url_for('predict')}}" method="post" enctype='multipart/form-data'>
+	<div id='hide'>
+		<h1>Upload an image for prediction</h1>
+		<hr>
+
+		<!-- Upload image -->
 		<input id="image-selector" name='image-selector' type="file">
-		<input id="predict-button" type = "submit" value="Predict">
-	</form> -->
 
-	<input id="image-selector" name='image-selector' type="file">
-	<input id="predict-button" type = "submit" value="Predict">
-
-	<label for="specieslist_predict">Select Species</label>
-	<select class="drop_down_list"  id='specieslist_predict' name='specieslist_predict'></select>
+		<!-- predict button -->
+		<input id="predict-button" type = "submit" value="Predict without segmentation" onclick="setTimeout(function() {window.location.href = '{{ url_for('display_results') }}';}, 9000);">
+		<input id="go-to-segment-button" type = "submit" value="Segment" onclick="window.location.href = '{{ url_for('segment_static') }}'">
 
 
-	<br>
-	<br>
+		<!-- select species -->
+		<label for="specieslist_predict">Select Species</label>
+		<select class="drop_down_list"  id='specieslist_predict' name='specieslist_predict'></select>
+
+		<br>
+		<br>
+
+		<!-- display selected image-->
+		<img id="selected-image" scr=""/> 
+	</div>
 	
-	<!-- displays the selected image-->
-	<img id="selected-image" scr=""/> 
-	<br>
-	<br>
-	<br>
-	<span id="prediction">Prediction: {{ label }} : {{ prob }}</span>
-
+	<!-- import ajax and main.js -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 	<script type="text/javascript" src = "{{ url_for('static',filename='main.js') }}"></script>
-
 </body>
 </html>
