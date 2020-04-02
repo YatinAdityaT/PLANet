@@ -289,4 +289,33 @@ $("#predict-button").click(function(event)
 		});
 	}
 );
+
+
+//post image and species to /predict
+$("#go-to-segment-button").click(function(event)
+	{   
+		var speciesSelectedValue_predict = specieslist_predict.options[specieslist_predict.selectedIndex].value;
+		var message = {
+			image: base64Image,
+			SelectedValue:speciesSelectedValue_predict
+		}; 
+
+		message = JSON.stringify(message);
+		hide.style.display='none';
+		loader_wrapper.style.display='inline';
+
+		$.ajax({
+			type: 'POST',
+			url: "/save_segmented_image",
+			data: message,
+			contentType: 'application/json',
+			success: function(){console.log('image posted successfully!')},
+			error: function(){alert('something went wrong during image post')},
+		}); 
+	}
+);
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

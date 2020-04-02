@@ -39,8 +39,7 @@ def grab_json(url):
     dic = resp.json()
     return dic
 
-
-def gen_frames():  
+def gen_frames(live_feed=True):  
     data_send = default
     resp = requests.post(url+'/jsondata', data = data_send)
     cap = cv2.VideoCapture(0)
@@ -59,73 +58,10 @@ def gen_frames():
         G_h = int(dic['G_h'])
         B_h = int(dic['B_h'])
 
-        _,frame = cap.read()
-        blurred_frame = cv2.blur(frame,(5,5),0)    
-        hsv_frame = cv2.cvtColor(blurred_frame,cv2.COLOR_BGR2HSV)
-
-        #Defining color theshold
-        low_green = np.array([R_l, G_l, B_l])
-        high_green = np.array([R_h, G_h, B_h])
-        print(low_green,high_green)
-        green_mask = cv2.inRange(hsv_frame, low_green, high_green)
-
-        #Morphological adjestments
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
-        opening = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel, iterations=1)
-        close = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel, iterations=1)
-
-        #Getting the largest contour
-        contours,_ = cv2.findContours(green_mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)    
-
-        try:
-
-            biggest = sorted(contours,key=cv2.contourArea,reverse=True)[0]
-            cv2.drawContours(frame,biggest,-1,(0,0,0),1)
-
-            #Creating blank mask and filling in the contour
-            blank_mask = np.zeros(frame.shape, dtype=np.uint8)
-            cv2.fillPoly(blank_mask, [biggest], (255,255,255))
-            blank_mask = cv2.cvtColor(blank_mask, cv2.COLOR_BGR2GRAY)
-            global ROI
-            ROI = cv2.bitwise_and(frame,frame,mask=blank_mask)
-
-            os.remove('static/temporary/temp_img.bmp')
-            cv2.imwrite('static/temporary/temp_img.bmp',ROI)
-
-            _, buffer_roi = cv2.imencode('.jpg', ROI)
-            f_roi = buffer_roi.tobytes()
-
-            _, buffer_frame = cv2.imencode('.jpg', frame)
-            f_frame = buffer_frame.tobytes()
-
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpg\r\n\r\n' + f_roi + b'\r\n')
-
-        except IndexError:
-            print('indexerror!!')
-            pass
-
-
-def single_image():  
-    #positing slider values for the first time
-    data_send = default
-    resp = requests.post(url+'/jsondata', data = data_send)
-
-    frame =  cv2.imread('static/temporary/temp_img.bmp') 
-    
-    while True:
-        dic = grab_json(url+'/jsondata') # this will make a get request to the url
-
-        if dic == None:
-            raise Exception("dic is none!") 
-
-        R_l = int(dic['R_l'])
-        G_l = int(dic['G_l'])
-        B_l = int(dic['B_l'])
-
-        R_h = int(dic['R_h'])
-        G_h = int(dic['G_h'])
-        B_h = int(dic['B_h'])
+        if live_feed:
+            _,frame = cap.read()
+        else:
+            frame =  cv2.imread('static/temporary/temp_img.bmp') 
 
         blurred_frame = cv2.blur(frame,(5,5),0)    
         hsv_frame = cv2.cvtColor(blurred_frame,cv2.COLOR_BGR2HSV)
@@ -145,6 +81,7 @@ def single_image():
         contours,_ = cv2.findContours(green_mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)    
 
         try:
+
             biggest = sorted(contours,key=cv2.contourArea,reverse=True)[0]
             cv2.drawContours(frame,biggest,-1,(0,0,0),1)
 
@@ -241,7 +178,8 @@ def give_predictions(image,SelectedValue):
     elif SelectedValue == species[8]: #Tomato
         print(species[8],'locked and loaded!')
         model = load_model('Models/plant_classification_segmented_resnet50_Tomato.h5', compile=False)
-        target_names = ['Tomato Bacterial Spot', 'Tomato Early Blight', 'Tomato Healthy', 'Tomato Late Blight', 'Tomato Leaf Mold', 'Tomato Septoria leaf spot','Tomato Spider mites(Two spotted spider mite)', 'Tomato Target Spot', 'Tomato Mosaic Virus', 'Tomato Yellow Leaf Curl Virus']
+        target_names = ['Tomato Bacterial Spot', 'Tomato Early Blight', 'Tomato Healthy', 'Tomato Late Blight', 'Tomato Leaf Mold', 'Tomato Septoria leaf spot',
+        'Tomato Spider mites(Two spotted spider mite)', 'Tomato Target Spot', 'Tomato Mosaic Virus', 'Tomato Yellow Leaf Curl Virus']
 
     # print(np.shape(image[0]))
     image = prepare_image(image[0],(128,128,3),flag = True)
@@ -274,7 +212,7 @@ def video_feed():
 
 @app.route('/single_image')
 def single_image():
-    return Response(gen_frames(),mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen_frames(live_feed=False),mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/segment')
 def segment():
@@ -365,7 +303,6 @@ def folders():
     else:
         return jsonify(folders) 
 
-
 @app.route('/pred_api',methods = ['GET','POST']) 
 def pred_api():
     if request.method == 'POST':        
@@ -380,11 +317,20 @@ def pred_api():
     else:
         return jsonify(predictions) 
 
-
 @app.route('/segment_static')
 def segment_static():
-    pass
+    return 'hi'
 
+@app.route('/save_segmented_image',methods='POST')
+def save_segmented_image():
+    data = request.get_json()
+    meta_data,image = data['image'].split(',')
+    SelectedValue = data['SelectedValue']
+
+    image = base64.b64decode(image)
+    image = Image.open(io.BytesIO(image))
+    image.save("static/temp_img.bmp")
+    return 'OK',200
 
 if __name__ == '__main__':
     # app.run(host=address,port=port,debug=debug)
