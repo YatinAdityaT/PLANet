@@ -383,7 +383,7 @@ def pred_api():
 
 @app.route('/segment_static')
 def segment_static():
-    return 'hi'
+    pass
 
 
 if __name__ == '__main__':
