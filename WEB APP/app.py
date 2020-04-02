@@ -89,8 +89,8 @@ def gen_frames():
             global ROI
             ROI = cv2.bitwise_and(frame,frame,mask=blank_mask)
 
-            os.remove('static/temp_img.bmp')
-            cv2.imwrite('static/temp_img.bmp',ROI)
+            os.remove('static/temporary/temp_img.bmp')
+            cv2.imwrite('static/temporary/temp_img.bmp',ROI)
 
             _, buffer_roi = cv2.imencode('.jpg', ROI)
             f_roi = buffer_roi.tobytes()
@@ -111,7 +111,7 @@ def single_image():
     data_send = default
     resp = requests.post(url+'/jsondata', data = data_send)
 
-    frame =  cv2.imread('static/temp_img.bmp') 
+    frame =  cv2.imread('static/temporary/temp_img.bmp') 
     
     while True:
         dic = grab_json(url+'/jsondata') # this will make a get request to the url
@@ -155,8 +155,8 @@ def single_image():
             global ROI
             ROI = cv2.bitwise_and(frame,frame,mask=blank_mask)
 
-            os.remove('static/temp_img.bmp')
-            cv2.imwrite('static/temp_img.bmp',ROI)
+            os.remove('static/temporary/temp_img.bmp')
+            cv2.imwrite('static/temporary/temp_img.bmp',ROI)
 
             _, buffer_roi = cv2.imencode('.jpg', ROI)
             f_roi = buffer_roi.tobytes()
