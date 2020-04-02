@@ -26,7 +26,7 @@
 
 		<!-- predict button -->
 		<input id="predict-button" type = "submit" value="Predict without segmentation" onclick="setTimeout(function() {window.location.href = '{{ url_for('display_results') }}';}, 9000);">
-		<input id="go-to-segment-button" type = "submit" value="Segment" onclick="window.location.href = '{{ url_for('segment_static') }}'">
+		<input id="go-to-segment-button" type = "submit" value="Segment" onclick="setTimeout(function() {window.location.href = '{{ url_for('segment_static') }}';}, 9000);">
 
 
 		<!-- select species -->

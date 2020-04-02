@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//index.html
+//index.html & segment_static.html
 
 var hue_lower = document.getElementById("hue_lower");
 var saturation_lower = document.getElementById("saturation_lower");
@@ -289,7 +289,6 @@ $("#predict-button").click(function(event)
 		});
 	}
 );
-
 
 //post image and species to /predict
 $("#go-to-segment-button").click(function(event)

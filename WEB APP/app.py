@@ -24,12 +24,6 @@ global predictions
 predictions = {'label':'','prob':''}
 
 default = {'R_l': 0, 'G_l': 0, 'B_l': 0, 'R_h': 255, 'G_h': 255, 'B_h': 255}
-        
-def make_noise(number):
-    duration = 200  # milliseconds
-    freq = 2240     # Hz
-    for i in range(number):
-            winsound.Beep(freq, duration)
 
 def nothing(useless=None):
     pass
@@ -42,13 +36,12 @@ def grab_json(url):
 def gen_frames(live_feed=True):  
     data_send = default
     resp = requests.post(url+'/jsondata', data = data_send)
-    cap = cv2.VideoCapture(0)
+
+    if live_feed:
+        cap = cv2.VideoCapture(0)
     
     while True:
         dic = grab_json(url+'/jsondata') # this will make a get request to the url
-
-        if dic == None:
-            raise Exception("dic is none!") 
 
         R_l = int(dic['R_l'])
         G_l = int(dic['G_l'])
@@ -92,8 +85,15 @@ def gen_frames(live_feed=True):
             global ROI
             ROI = cv2.bitwise_and(frame,frame,mask=blank_mask)
 
-            os.remove('static/temporary/temp_img.bmp')
-            cv2.imwrite('static/temporary/temp_img.bmp',ROI)
+            if live_feed:
+                os.remove('static/temporary/temp_img.bmp')
+                cv2.imwrite('static/temporary/temp_img.bmp',ROI)
+            else:
+                try:
+                    os.remove('static/temporary/temp_img2.bmp')
+                except:
+                    print()
+                cv2.imwrite('static/temporary/temp_img2.bmp',ROI)
 
             _, buffer_roi = cv2.imencode('.jpg', ROI)
             f_roi = buffer_roi.tobytes()
@@ -267,7 +267,7 @@ def predict():
 
         image = base64.b64decode(image)
         image = Image.open(io.BytesIO(image))
-        image.save("static/temp_img.bmp")
+        image.save("static/temporary/temp_img.bmp")
         image = prepare_image(image,target_size = (224,224))
 
         if wanna_load_model =='y':
@@ -319,9 +319,9 @@ def pred_api():
 
 @app.route('/segment_static')
 def segment_static():
-    return 'hi'
+    return render_template('segment_static.html')
 
-@app.route('/save_segmented_image',methods='POST')
+@app.route('/save_segmented_image',methods=['POST'])
 def save_segmented_image():
     data = request.get_json()
     meta_data,image = data['image'].split(',')
@@ -329,7 +329,8 @@ def save_segmented_image():
 
     image = base64.b64decode(image)
     image = Image.open(io.BytesIO(image))
-    image.save("static/temp_img.bmp")
+    image.save("static/temporary/temp_img.bmp")
+    print('image saved')
     return 'OK',200
 
 if __name__ == '__main__':
