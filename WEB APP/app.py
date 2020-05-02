@@ -1,6 +1,6 @@
 import io
-import cv2
 import os
+import cv2
 import flask
 import base64 
 import requests
@@ -15,7 +15,6 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator,img_to_array
 from tensorflow.keras.applications.resnet50 import decode_predictions, preprocess_input
 from flask import Flask,render_template,request,redirect,url_for,session,flash,jsonify,Response
 
-# from base64 import decodestring
 
 global ROI
 global model
@@ -275,7 +274,9 @@ def predict():
             predictions =  give_predictions(image,SelectedValue)
 
         print(predictions['label'],predictions['prob'])
-        return redirect(url_for('display_results'))
+        # return redirect(url_for('display_results'))
+        return render_template('display_results.html',label=predictions['label'],prob=predictions['prob'][0])
+
 
 @app.route('/display_results',methods=['GET','POST'])
 def display_results():
@@ -346,37 +347,4 @@ if __name__ == '__main__':
     # app.run(host=address,port=port,debug=debug)
     app.run(host="127.0.0.3",port="5001",debug=True)
     # app.run(host="127.0.0.3",port="5001",debug=False)
-
     # app.run(host="192.168.43.187",port="5000",debug=False)
-
-
-
-
-
-
-
-
-
-# print('lan server?')
-# lan_server = input('y/n')
-# if lan_server == 'y' :
-#     address = "0.0.0.0"
-#     port = "5000"
-# else:
-#     address = "127.0.0.3"
-#     port = "5001"
-
-
-
-# print('debug?')
-# debug = input('y/n')
-# if debug == 'y' :
-#     debug = True
-# else:
-#     debug = False
-
-
-
-
-# print('do you wish to load the model?')
-# wanna_load_model = input('y/n')

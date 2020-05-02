@@ -37,6 +37,7 @@
 
 	<!-- to load image and then reload page once -->
 	<script type="text/javascript"> 
+
 		$( document ).ready(function() {
 		    window.onload = function() {
     			document.getElementById('segmented_image_display').src = "{{ url_for('static', filename='temporary/temp_img2.bmp') }}";		    	
@@ -47,6 +48,7 @@
 			        window.location = window.location + '#l';
 			        window.location.reload();
 			    }
+			    
 	</script>
 	
 </body>
