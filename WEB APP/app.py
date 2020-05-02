@@ -188,7 +188,7 @@ def give_predictions(image,SelectedValue):
     max_ = np.argmax(preds)
     label = target_names[max_]
     global predictions
-    predictions = {'label':label,'prob':preds[max_]}
+    predictions = {'label':label,'prob':preds}
     print("predictions",predictions)
     return predictions
 
